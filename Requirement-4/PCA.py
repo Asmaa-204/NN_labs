@@ -20,6 +20,7 @@ class PCA():
         # TODO 2: Standardize the training data
         z_train = (x_train - self.μ) / self.σ
 
+        # -----------Eigenvalue decomposition-------------
         # TODO 3: Compute the covariance matrix
         Σ = np.cov(z_train, rowvar=False, bias=True)  # rowvar=False because columns are features
 
@@ -38,6 +39,30 @@ class PCA():
         L = self.new_dim
         self.A = U[:, :L].T  # select first L columns
 
+
+        # -----------SVD-------------
+        m = z_train.shape[0]
+        U, S, Vt = np.linalg.svd(z_train / np.sqrt(m - 1), full_matrices=False)
+
+        # Eigenvalues are squares of singular values
+        λs = S**2
+
+        # Explained variance ratio
+        self.explained_variance_ratio_ = λs / np.sum(λs)
+
+        # Determine number of components to keep
+        if isinstance(self.new_dim, float) and 0 < self.new_dim <= 1:
+            cum_var = np.cumsum(self.explained_variance_ratio_)
+            L = np.argmax(cum_var >= self.new_dim) + 1
+        elif isinstance(self.new_dim, int) and self.new_dim > 0:
+            L = min(self.new_dim, z_train.shape[1])
+        else:
+            L = z_train.shape[1]  # default to all components
+
+        # Set transformation matrix (top L components)
+        self.A = Vt[:L]  # already sorted by SVD
+        #-------------------------------------------
+
         return self
 
     def transform(self, x_val):
@@ -47,8 +72,7 @@ class PCA():
 
     def inverse_transform(self, z_val):
         # TODO 8: Apply the inverse transformation equation (including destandardization)
-        # First reconstruct the standardized data, then destandardize
-        x_standardized = z_val @ self.A  # approximate reconstruction
+        x_standardized = z_val @ self.A
         return x_standardized * self.σ + self.μ
 
     def fit_transform(self, x_train):

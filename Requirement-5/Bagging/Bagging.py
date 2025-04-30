@@ -51,7 +51,7 @@ class Bagging:
         # TODO 6: Apply the soft voting equation presented in the notebook
         # By averaging all probabilities for the same label for each point over the estimators
         y_pred_mean = np.mean(y_preds, axis=0)
-        # TODO 7.0: What's the shape of y_pred_mean now?
+        # TODO 7.0: What's the shape of y_pred_mean now? (n_samples, n_classes)
         # TODO 7.1: Apply argmax over the probabilities to get the most probable class of each point by soft voting
         y_pred = np.argmax(y_pred_mean, axis=1)
         return y_pred
